@@ -1,0 +1,35 @@
+{
+  "credit_score_bands": [
+    {"min": 750, "max": 900, "level": "Excellent", "default_probability": 0.02},
+    {"min": 700, "max": 749, "level": "Good",      "default_probability": 0.06},
+    {"min": 650, "max": 699, "level": "Fair",      "default_probability": 0.15},
+    {"min": 600, "max": 649, "level": "Poor",      "default_probability": 0.28},
+    {"min": 300, "max": 599, "level": "Very Poor", "default_probability": 0.55}
+  ],
+  "dti_thresholds": {
+    "safe": 0.36,
+    "moderate": 0.45,
+    "high": 0.55
+  },
+  "loan_amount_multiplier_caps": {
+    "Salaried": 60,
+    "Self-Employed": 36,
+    "Business": 48,
+    "Unemployed": 0,
+    "Retired": 12,
+    "Student": 6
+  },
+  "high_risk_locations": ["Unknown", "TestCity"],
+  "anomaly_rules": {
+    "min_age": 21,
+    "max_age": 65,
+    "max_tenure_months": 360,
+    "min_loan_amount": 10000
+  },
+  "policy_notes": [
+    "Applicants with any default in the last 24 months are flagged for manual review.",
+    "DTI > 0.55 is auto-rejected unless credit score >= 800.",
+    "Self-Employed applicants need at least 2 years of business tenure.",
+    "Unemployed applicants are not eligible for unsecured loans."
+  ]
+}

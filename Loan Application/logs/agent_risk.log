@@ -1,0 +1,17 @@
+INFO:     Started server process [39333]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:9002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:38256 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34960 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52420 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54128 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46266 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35752 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37570 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57498 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54956 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54090 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41974 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55122 - "POST /analyze HTTP/1.1" 200 OK

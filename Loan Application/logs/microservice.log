@@ -1,0 +1,67 @@
+INFO:     Started server process [39352]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53902 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53916 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53932 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52152 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52154 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:41584 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41590 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41598 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51018 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49978 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49984 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53422 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32976 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32978 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32990 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55246 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55260 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55268 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40668 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40680 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40690 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39340 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39344 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50278 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50284 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43130 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43144 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46228 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46244 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38724 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38736 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43808 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42630 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42636 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42640 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37824 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37828 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37830 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45468 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45470 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55422 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59304 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59310 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59322 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45652 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45654 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45664 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47830 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50528 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50544 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58170 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58180 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58186 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45726 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45740 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51418 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51420 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51430 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51432 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47478 - "GET /loan/applicants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47488 - "POST /loan/apply HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47496 - "GET /loan/cases?limit=25 HTTP/1.1" 200 OK

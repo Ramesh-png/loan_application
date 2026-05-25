@@ -1,0 +1,763 @@
+================================================================================
+PROJECT VIVA PREPARATION
+Agentic AI Intelligent Loan Approval System (Multi-Agent)
+================================================================================
+
+PROJECT NAME
+------------
+Agentic AI Intelligent Loan Approval System (Multi-Agent)
+
+ONE-LINE SUMMARY
+----------------
+A multi-agent Agentic AI platform that ingests a loan application, runs it
+through four specialist AI agents over a LangGraph state machine, and returns
+an explainable classification: APPROVED, REJECTED, or REQUIRES MANUAL REVIEW.
+Runs entirely on localhost.
+
+
+================================================================================
+1) WHAT I BUILT (END-TO-END OVERVIEW)
+================================================================================
+
+- A loan-application web app where a customer (existing or new) fills a form
+  and gets an instant, explainable loan decision.
+- Behind the form there is a 4-layer system:
+    1. Presentation: Streamlit chatbot UI (port 8501)
+    2. Microservice: FastAPI gateway (port 8000)
+    3. Orchestration: LangGraph state graph with conditional routing
+    4. Agents + Tools: 4 FastAPI agents (9001-9004) backed by 4 FastMCP
+       tool servers (8001-8004)
+- All decisions are explained in plain English (LLM = Claude Sonnet 4.6) and
+  logged to an append-only compliance audit trail.
+
+
+================================================================================
+2) WHY AGENTIC AI (NOT JUST ONE PROMPT / ONE MODEL)
+================================================================================
+
+- Single-prompt LLMs are stateless: they don't have access to applicant
+  history, risk rules, or notification systems.
+- A loan decision needs a *workflow*, not a single answer:
+    -> fetch profile -> compute risk -> apply policy -> persist + notify
+- Agentic AI = LLM + tools + memory + control flow. It can:
+    -> call tools (MCP servers) to fetch grounded data
+    -> coordinate steps with explicit ordering
+    -> persist outcomes for audit
+- Result: deterministic when needed (rules), flexible when needed (LLM
+  explanations), and traceable end-to-end.
+
+
+================================================================================
+3) WHY MULTI-AGENT ARCHITECTURE
+================================================================================
+
+Benefits:
+- Single Responsibility: each agent does ONE job well (profile, risk, decide,
+  comply). Easier to reason about, test, and replace.
+- Independent deployability: agents are separate FastAPI services, can scale
+  or upgrade independently.
+- Parallelism-ready: future agents can run in parallel branches of the graph.
+- Failure isolation: one agent crash doesn't take down the system.
+
+Tradeoffs:
+- More moving parts -> more network hops, more orchestration logic.
+- Distributed state has to be carried explicitly (we use LangGraph state).
+- Slightly higher latency vs. a monolith.
+
+
+================================================================================
+4) WHY LANGGRAPH
+================================================================================
+
+- LangGraph gives us a typed state machine with:
+    -> Nodes (each node = call one agent over HTTP)
+    -> Edges (linear flow + conditional routing)
+    -> Shared State (TypedDict carrying application, profile, risk, decision,
+       compliance, audit_trail)
+- Topology used:
+    START -> applicant_profile -> financial_risk -> loan_decision
+          -> conditional edge -> compliance -> END
+- Conditional edge routes on classification (Approved / Rejected / Review).
+  Today all three converge into compliance, but the topology makes it trivial
+  to add a human-in-the-loop branch later for the "Review" path.
+- LangGraph also gives us free audit logging: every node hop is recorded.
+
+
+================================================================================
+5) WHY MCP / TOOL SERVERS
+================================================================================
+
+- MCP (Model Context Protocol) standardises how agents access data and tools.
+- Each MCP server exposes typed tools (functions) over HTTP using FastMCP.
+- Benefits:
+    -> Loose coupling: agents don't import each other's code; they speak MCP.
+    -> Swappable backends: ApplicantDB JSON file today can become Postgres
+       tomorrow without touching the agent code.
+    -> Reusable across multiple agents and across multiple AI products.
+- Four MCP servers used:
+    -> ApplicantDB        -> applicant lookup, KYC, register_applicant
+    -> RiskRulesDB        -> credit bands, DTI calc, anomaly detection, policy
+    -> DecisionSynthesis  -> risk score formula + classification recommender
+    -> NotificationSystem -> case ID, notify channel, append-only audit log
+
+
+================================================================================
+6) WHY MICROSERVICES
+================================================================================
+
+- Each agent and each MCP server runs as its own process (own port).
+- Independent scaling: the Loan Decision agent uses the LLM heavily, so it
+  may need more replicas than the Compliance agent.
+- Independent deployment: you can update the risk model without redeploying
+  the entire system.
+- Clear contracts: every service exposes /health and a small typed API.
+- Container-ready: each service has a single entry point and minimal deps.
+
+
+================================================================================
+7) COMPLETE SYSTEM FLOW (STEP-BY-STEP)
+================================================================================
+
+1.  User fills the Streamlit form (Existing Customer or New Applicant).
+2.  Streamlit POSTs the form as JSON to FastAPI gateway: POST /loan/apply.
+3.  FastAPI gateway validates the payload with a Pydantic model
+    (LoanApplication). Bad input -> 422 error before any agent runs.
+4.  Gateway calls the ApplicantDB MCP tool "register_applicant" (idempotent):
+    new applicants are persisted so they appear in the dropdown next time.
+5.  Gateway invokes the LangGraph pipeline with the initial state.
+6.  Node 1 - Applicant Profile Agent (HTTP call to :9001/analyze).
+    Calls ApplicantDB MCP to fetch profile, income history, KYC.
+    Returns income_stability_score, employment_risk, credit_history_summary,
+    completeness_flags, reasoning.
+7.  Node 2 - Financial Risk Agent (HTTP call to :9002/analyze).
+    Calls RiskRulesDB MCP for credit band, DTI calculation, loan cap,
+    anomalies. Returns DTI ratio, credit risk level, loan amount risk,
+    anomaly flags, reasoning.
+8.  Node 3 - Loan Decision Agent (HTTP call to :9003/decide).
+    Calls DecisionSynthesis MCP for deterministic risk score + recommended
+    classification, then asks Claude Sonnet 4.6 to either agree or escalate
+    and write the customer-facing explanation. Returns classification, risk
+    score, confidence, key factors, explanation.
+9.  Conditional edge routes on classification (Approved / Rejected / Review).
+10. Node 4 - Compliance & Action Agent (HTTP call to :9004/finalize).
+    Calls NotificationSystem MCP to create a Case ID, send a notification,
+    and append a compliance log line (JSONL).
+11. LangGraph returns the final state with full audit_trail.
+12. FastAPI gateway returns the LoanDecisionResponse JSON to Streamlit.
+13. Streamlit renders the decision banner, metric cards, progress bars,
+    agent breakdown, and audit timeline.
+
+
+================================================================================
+8) THE FOUR AGENTS - DETAILED
+================================================================================
+
+8.1  APPLICANT PROFILE AGENT  (FastAPI :9001)
+     MCP: ApplicantDB
+     Input:
+       - LoanApplication (applicant_id, age, income, employment, etc.)
+     Tools used:
+       - get_applicant_profile(applicant_id)
+       - get_income_history(applicant_id)
+       - check_kyc(applicant_id)
+     Logic:
+       - Income stability = 1 - coefficient_of_variation(income_history_12mo)
+         (clamped to [0,1])
+       - Employment risk mapping:
+           Salaried + >=2y tenure -> Low
+           Salaried + <2y          -> Medium
+           Self-Employed >=3y      -> Low (else Medium)
+           Business >=5y           -> Low (else Medium)
+           Retired                 -> Medium
+           Student                 -> High
+           Unemployed              -> Critical
+       - Credit history summary built from loans_taken / closed / defaults /
+         late_payments.
+       - Completeness flags:
+           applicant_record_missing
+           new_applicant_kyc_pending  (first-time customers)
+           kyc_incomplete             (existing customers w/ stale KYC)
+           address_unverified
+       - Claude is used for a 2-sentence narrative; defaults to a rule-based
+         narrative if LLM is unavailable.
+     Output:
+       ApplicantProfileOutput(income_stability_score, employment_risk,
+       credit_history_summary, application_completeness_flags, reasoning)
+
+8.2  FINANCIAL RISK ANALYSIS AGENT  (FastAPI :9002)
+     MCP: RiskRulesDB
+     Input: LoanApplication
+     Tools used:
+       - get_credit_score_band(credit_score)
+       - compute_dti(monthly_income, loan_amount, tenure_months, liabilities)
+       - get_loan_amount_cap(employment_type, monthly_income)
+       - detect_anomalies(age, loan_amount, tenure_months, location, employment)
+     Logic:
+       - DTI uses standard EMI formula (see Algorithms section).
+       - Loan amount risk =
+           Low if amount <= 0.75 * cap
+           Moderate if amount <= cap
+           High if amount > cap
+           Critical if cap == 0 (e.g. unemployed)
+       - Anomaly rules (configurable in data/risk_rules.json):
+           age < 21 or > 65
+           tenure > 360 months
+           loan_amount < 10000
+           high-risk location (Unknown, TestCity)
+           employment_type == Unemployed
+       - Claude writes a 3-sentence risk narrative.
+     Output:
+       FinancialRiskOutput(debt_to_income_ratio, credit_score_risk_level,
+       loan_amount_risk, anomaly_detected, anomaly_reasons, reasoning)
+
+8.3  LOAN DECISION AGENT  (FastAPI :9003)
+     MCP: DecisionSynthesis  (also calls RiskRulesDB for policy notes)
+     LLM: Claude Sonnet 4.6
+     Input: application + profile + risk
+     Tools used:
+       - synthesize_decision(...) -> risk_score + classification + factors
+       - get_policy_notes() -> human-readable policy text (LLM grounding)
+     Logic:
+       - Hard policy violations (auto-reject):
+           Unemployed applicant
+           DTI > 0.55 AND credit_score < 800
+           kyc_incomplete on an EXISTING customer
+       - Soft onboarding notes (do NOT auto-downgrade):
+           new_applicant_kyc_pending
+           address_unverified
+           applicant_record_missing
+       - Deterministic synth produces a recommended classification based on
+         risk score + anomalies + hard violations.
+       - Claude refines the explanation and may escalate borderline cases to
+         "Requires Manual Review" if financial signals are contradictory.
+         Claude is constrained to one of three labels; it cannot invent a new
+         outcome.
+       - If Approved + new applicant, a KYC contingency note is appended
+         automatically so the customer understands the offer is conditional.
+     Output:
+       LoanDecisionOutput(classification, risk_score, confidence_level,
+       key_decision_factors, explanation)
+
+8.4  COMPLIANCE & ACTION ORCHESTRATOR AGENT  (FastAPI :9004)
+     MCP: NotificationSystem
+     Input: application + profile + risk + decision
+     Tools used:
+       - create_case_id(applicant_id)
+       - send_notification(applicant_id, channel, message)
+       - log_compliance_action(applicant_id, classification, action, summary,
+                              case_id)
+     Logic:
+       - Action mapping:
+           Approved  -> "Loan offer issued; disbursement workflow triggered."
+           Rejected  -> "Application rejected; adverse action notice queued."
+           Review    -> "Application routed to manual underwriter queue."
+       - Notification channel:
+           email for Approved/Rejected, in_app for Review.
+       - Claude writes a one-sentence audit summary (neutral language).
+       - Persists case to logs/compliance_log.jsonl (append-only).
+       - Persists customer notification to logs/notifications.jsonl.
+     Output:
+       ComplianceOutput(action_taken, notification_sent, case_id, timestamp,
+       summary)
+
+
+================================================================================
+9) ALGORITHMS / MODELS USED
+================================================================================
+
+Income Stability Score
+  stability = 1 - (stdev(income_history) / mean(income_history))
+  clamped to [0,1].  1.0 = perfectly flat income, 0.0 = highly volatile.
+
+EMI (used in DTI calculation)
+  EMI = P * r * (1+r)^n / ((1+r)^n - 1)
+    P = loan amount
+    r = monthly interest rate (annual / 12, default 11% annual)
+    n = tenure in months
+
+DTI (Debt-to-Income)
+  DTI = (EMI + existing_monthly_liabilities) / monthly_income
+  Classification:
+    <= 0.36  Safe
+    <= 0.45  Moderate
+    <= 0.55  High
+    > 0.55   Critical
+
+Risk Score (0..100, higher = riskier)
+  score = 45 * credit_default_probability
+        + 25 * min(1, DTI)
+        + 15 * (1 - income_stability)
+        + 10 * employment_weight
+        + 5  * min(1, anomaly_count / 3)
+  employment_weight: Low=0, Medium=0.5, High/Critical=1.0
+  Credit default probability comes from credit band:
+    Excellent 0.02 / Good 0.06 / Fair 0.15 / Poor 0.28 / Very Poor 0.55
+
+Classification Recommender (in DecisionSynthesis MCP)
+  if hard_policy_violations: Rejected (confidence 0.95)
+  elif risk_score < 30 and no anomalies: Approved (confidence 0.9)
+  elif risk_score > 70: Rejected (confidence 0.85)
+  else: Requires Manual Review (confidence 0.6)
+
+LLM
+  Claude Sonnet 4.6 via the Anthropic SDK.
+  Used for narrative reasoning in each agent and for refining the Loan
+  Decision Agent's explanation. The LLM cannot invent a new classification -
+  it must pick one of the three labels.
+
+
+================================================================================
+10) EXPLAINABILITY AND AUDITABILITY
+================================================================================
+
+Explainability:
+  - Every agent returns a "reasoning" field with the WHY behind its numbers.
+  - The decision contains:
+      classification, risk_score, confidence_level, key_decision_factors[],
+      explanation (customer-facing paragraph).
+  - The UI renders factor "pills" and progress bars per metric so a
+    non-technical reviewer can audit visually.
+  - Numbers (DTI, stability, default probability) are derived from explicit
+    formulas, not the LLM, so they're reproducible.
+
+Auditability:
+  - LangGraph carries an audit_trail in state: list of {step, timestamp,
+    payload} appended at each node hop.
+  - Compliance MCP writes an append-only JSONL log: logs/compliance_log.jsonl
+    Each line contains: applicant_id, classification, action, summary,
+    case_id, timestamp.
+  - Notifications are logged similarly: logs/notifications.jsonl
+  - Case IDs (CASE-XXXXXXXX) are returned to the customer and stored.
+  - GET /loan/cases returns the recent audit log for verification.
+
+
+================================================================================
+11) TECH STACK
+================================================================================
+
+- Python 3.12
+- Streamlit          - chatbot UI with custom CSS (cards, progress bars)
+- FastAPI            - gateway + all 4 agent services
+- Uvicorn            - ASGI server
+- LangGraph          - state-machine orchestration (TypedDict state)
+- LangChain          - building blocks for LLM workflows
+- FastMCP            - MCP servers exposed over HTTP
+- Anthropic SDK      - Claude Sonnet 4.6 (claude-sonnet-4-6)
+- Pydantic v2        - typed schemas across all services
+- httpx              - async/sync HTTP client between layers
+- JSON files         - lightweight applicant DB and risk rules
+- JSONL files        - append-only compliance + notification audit logs
+
+
+================================================================================
+A) KEY FEATURES
+================================================================================
+
+- Multi-agent pipeline (4 specialist AI agents).
+- LangGraph orchestration with conditional routing.
+- Explainable AI: every output has reasoning + numeric grounding.
+- Bank-grade audit trail (in-state + JSONL).
+- Modern Streamlit UI with cards, metrics, and progress bars.
+- Existing-customer dropdown OR new-applicant self-registration.
+- Auto-generated applicant IDs.
+- KYC handled as a contingency (real bank behaviour), not a hard blocker
+  for new applicants.
+- Graceful LLM fallback: pipeline still produces decisions if the API key
+  is not set (uses deterministic narratives only).
+- Health endpoints on every service.
+
+
+================================================================================
+B) ARCHITECTURE - COMPONENTS AND RESPONSIBILITIES
+================================================================================
+
+Streamlit UI (8501)             User-facing chatbot + forms + result display
+FastAPI Gateway (8000)          Validates input, orchestrates pipeline,
+                                exposes /loan/apply, /loan/cases,
+                                /loan/applicants, /health
+LangGraph Orchestrator          In-process state machine inside the gateway
+4 FastAPI Agents (9001-9004)    Independent specialist microservices
+4 FastMCP Servers (8001-8004)   ApplicantDB / RiskRulesDB / DecisionSynthesis
+                                / NotificationSystem
+JSON store (data/)              applicants.json, risk_rules.json
+JSONL logs (logs/)              compliance_log.jsonl, notifications.jsonl
+
+
+================================================================================
+C) DATA MODEL / INPUT FIELDS  (LoanApplication)
+================================================================================
+
+- applicant_id          str       unique identifier (auto-generated for new)
+- full_name             str|None  optional customer name
+- age                   int       18..100
+- income                float     annual income in INR
+- employment_type       enum      Salaried / Self-Employed / Business /
+                                  Unemployed / Retired / Student
+- credit_score          int       300..900
+- loan_amount           float     INR
+- loan_tenure_months    int       1..480
+- existing_liabilities  float     monthly INR, default 0
+- location              str       city / state
+- application_timestamp datetime  defaults to now (UTC)
+
+
+================================================================================
+D) DECISION RULES (with examples)
+================================================================================
+
+APPROVED
+  - risk_score < 30 AND no anomalies AND no hard violations
+  - Example: credit 760, salaried 6y tenure, DTI 0.18, no anomalies
+            -> risk ~6, Approved.
+
+REJECTED
+  - any hard policy violation, OR risk_score > 70
+  - Examples:
+      Unemployed applicant -> auto-reject.
+      DTI > 0.55 AND credit_score < 800 -> auto-reject.
+      Existing customer with stale KYC -> auto-reject.
+
+REQUIRES MANUAL REVIEW
+  - Borderline (30 <= risk_score <= 70), OR
+  - Anomalies present but no hard violation, OR
+  - Conflicting signals the LLM chooses to escalate.
+  - Example: self-employed with volatile income, fair credit (690),
+             2 late payments in 12mo -> routed to underwriter.
+
+New applicants:
+  - Onboarding flags (KYC pending, address unverified) do NOT downgrade.
+  - A strong-profile new applicant gets Approved with a KYC contingency note.
+  - A weak-profile new applicant still gets Review or Rejected based on the
+    same financial rules.
+
+
+================================================================================
+E) ERROR HANDLING AND FALLBACKS
+================================================================================
+
+- Pydantic validation at the gateway -> 422 for malformed input.
+- httpx timeouts (default 90s per agent hop).
+- Per-MCP-call try/except in the helper so a single tool failure does not
+  crash the agent (returns a structured error which the agent handles).
+- LLM fallback: if ANTHROPIC_API_KEY is missing or Claude call fails,
+  agents fall back to rule-based narratives. Pipeline still completes.
+- Decision-level safety net: synth defaults to "Requires Manual Review"
+  when signals are missing or unparseable (fail-safe to human review).
+- If an agent crashes, FastAPI returns 500 -> gateway wraps it in a clean
+  HTTP 500 with a "Pipeline failure" detail (no PII leak).
+- Compliance log is append-only; even on partial failure the failed case
+  can be logged for follow-up.
+
+
+================================================================================
+F) SECURITY & COMPLIANCE
+================================================================================
+
+- All services bound to 127.0.0.1 (localhost only) by default.
+- ANTHROPIC_API_KEY loaded from .env (not committed). .env.example is.
+- PII isolation: customer details flow only between gateway -> agents.
+  Logs store classification + summary + case_id, not the full payload.
+- Append-only compliance log -> no in-place edits, satisfies audit.
+- Case IDs are random UUID-derived (uuid4 hex) so they don't leak
+  customer order.
+- Future: add JWT auth on gateway, mTLS between services, encryption at rest
+  for the applicant store.
+
+
+================================================================================
+G) SCALABILITY & PERFORMANCE
+================================================================================
+
+- Each agent is stateless -> horizontally scalable behind a load balancer.
+- MCP servers are stateless reads/writes -> can run multiple replicas.
+- LangGraph state is per-request, no global mutex.
+- LLM is the latency bottleneck; mitigations:
+    -> short, structured prompts
+    -> JSON-mode responses with hard token limits
+    -> deterministic fallback if LLM is slow
+- Future optimisations:
+    -> async agent calls (currently sequential via httpx; LangGraph
+       supports parallel branches when added)
+    -> cache get_credit_score_band / get_policy_notes (rarely change)
+    -> connection pooling via a shared httpx AsyncClient
+    -> Redis or Postgres-backed checkpointer for LangGraph (audit + replay)
+
+
+================================================================================
+H) TESTING STRATEGY
+================================================================================
+
+Unit tests:
+  - Income stability formula (synthetic income histories).
+  - DTI calculation correctness (against a hand-computed example).
+  - Risk score arithmetic across bands and weights.
+  - Recommender classifier on boundary cases (29, 30, 70, 71).
+  - Anomaly rules (age limits, location list).
+
+Integration tests:
+  - Start all 9 services with run_all.sh, call POST /loan/apply with the
+    3 demo scenarios, assert classification, risk band, case persistence.
+
+Smoke tests:
+  - /health on every service.
+  - End-to-end curl with sample payloads.
+  - Cold-start ordering (MCP first, then agents, then gateway).
+
+Sample scenarios (used in development):
+  - APP1001 happy path -> Approved.
+  - APP1002 volatile self-employed -> Manual Review.
+  - APP1005 unemployed -> Rejected.
+  - Brand-new applicant strong profile -> Approved + KYC contingency.
+
+
+================================================================================
+I) LIMITATIONS AND FUTURE ENHANCEMENTS
+================================================================================
+
+Current limitations:
+- JSON-file applicant store -> fine for demo, not production.
+- Sequential agent calls (no parallel fan-out yet).
+- Single-tenant; no auth on the gateway.
+- LLM cost not optimised (no caching of prompts).
+- No human-in-the-loop UI for the manual review queue.
+
+Future enhancements:
+- Swap JSON for Postgres or DuckDB; add migrations.
+- Add an "Underwriter" agent + Slack/Email connectors for review cases.
+- Parallelise profile + risk agents (independent data).
+- Prompt caching + structured outputs for Claude.
+- Add a Bias / Fairness agent for protected-attribute monitoring.
+- Add OpenTelemetry tracing across all hops.
+- Production-grade auth (OAuth/JWT) and mTLS between services.
+- Configurable risk rules via an admin UI (not editing JSON).
+
+
+================================================================================
+TOP 25 VIVA QUESTIONS WITH ANSWERS
+================================================================================
+
+Q1. What is Agentic AI?
+A1. AI systems that combine an LLM with tools, memory, and control flow to
+    autonomously accomplish multi-step tasks. They reason, call tools to act
+    on the world, and persist state across steps.
+
+Q2. Why multi-agent instead of one giant prompt?
+A2. Each task has a clear single responsibility (profile, risk, decision,
+    compliance). Separate agents are easier to test, replace, scale, and
+    fail-isolate. A single prompt would mix concerns and lose traceability.
+
+Q3. How does the orchestrator decide which agent to call?
+A3. LangGraph defines the graph statically: profile -> risk -> decision ->
+    compliance. After the decision node, a conditional edge inspects
+    state["decision"]["classification"] and routes Approved / Rejected /
+    Review into the compliance node. Adding a human-review branch is just
+    a new edge.
+
+Q4. Why LangGraph instead of a simple Python loop?
+A4. LangGraph gives typed state, conditional edges, built-in checkpointing,
+    and audit-trail capture for free. It's purpose-built for agent
+    orchestration and integrates with LangChain tools.
+
+Q5. What is MCP and why use it?
+A5. MCP (Model Context Protocol) is a standard for exposing typed tools
+    over a transport (HTTP/stdio). It decouples agents from data sources -
+    we can swap our JSON file for Postgres without changing agent code.
+
+Q6. What is FastMCP?
+A6. A Python framework for building MCP servers quickly with decorators
+    like @mcp.tool. We use its HTTP transport so agents reach servers over
+    plain HTTP at /mcp.
+
+Q7. How do you calculate DTI?
+A7. Compute EMI using the standard formula
+    EMI = P*r*(1+r)^n / ((1+r)^n - 1) with monthly rate r, then
+    DTI = (EMI + existing_monthly_liabilities) / monthly_income.
+
+Q8. How do you score risk on 0..100?
+A8. Weighted sum: 45*credit_default_prob + 25*DTI + 15*(1-income_stability)
+    + 10*employment_weight + 5*min(1, anomalies/3). Clamped to [0,100].
+    Lower = safer.
+
+Q9. How is the classification decided?
+A9. In DecisionSynthesis MCP: hard violations -> Rejected. Else
+    risk<30 and no anomalies -> Approved. Else risk>70 -> Rejected.
+    Else Requires Manual Review.
+
+Q10. What stops the LLM from changing the final decision arbitrarily?
+A10. The LLM is constrained to choose from exactly three labels
+     ("Approved", "Rejected", "Requires Manual Review"). We validate its
+     JSON output and fall back to the deterministic synth recommendation
+     if the label is invalid. Hard policy violations always override the
+     LLM.
+
+Q11. What happens if an agent fails?
+A11. The HTTP call returns an error; the gateway raises a 500 with a
+     "Pipeline failure" detail. We don't write a partial decision. In
+     production we'd retry with exponential backoff and route to the
+     manual review queue as a safety fallback.
+
+Q12. What happens if the LLM API is down?
+A12. Every agent has a deterministic narrative fallback. The pipeline still
+     completes - the explanations are rule-based instead of LLM-generated.
+
+Q13. How is the system explainable?
+A13. Every agent returns a `reasoning` field. The final decision contains
+     key_decision_factors (a list) and a paragraph explanation. Numeric
+     grounding (DTI, stability) comes from explicit formulas, not the LLM.
+
+Q14. How is the system auditable?
+A14. LangGraph captures an audit_trail of {step, timestamp, payload} in
+     state. The Compliance agent appends every case to an append-only
+     JSONL log with a unique Case ID. /loan/cases exposes the log.
+
+Q15. Why a "Requires Manual Review" outcome?
+A15. Because some applications are borderline (volatile income, fair credit,
+     anomalies). Auto-approving or auto-rejecting them is unsafe. Human
+     underwriters add judgment without bypassing the system.
+
+Q16. How do you handle a brand-new applicant?
+A16. The gateway calls register_applicant on ApplicantDB MCP (idempotent).
+     The profile agent sets soft flags (new_applicant_kyc_pending,
+     address_unverified). These do NOT downgrade the decision; the
+     compliance agent surfaces them as a contingency note in the offer.
+
+Q17. Why don't you reject new applicants for missing KYC?
+A17. Because KYC happens during onboarding in real banks. We approve them
+     financially if their profile is strong and mark the offer "contingent
+     on KYC". Existing customers with stale KYC are still rejected.
+
+Q18. What's the difference between hard and soft policy signals?
+A18. Hard violations auto-reject (unemployed, DTI>0.55+credit<800, stale
+     KYC for existing customers). Soft signals (new-customer KYC pending,
+     address unverified) are informational and do not change the
+     classification.
+
+Q19. How do you validate input?
+A19. With Pydantic v2 models (LoanApplication). Invalid age, income, or
+     employment_type returns 422 before any agent runs.
+
+Q20. How would you scale this in production?
+A20. Each agent and MCP server is a stateless container. Run multiple
+     replicas behind a load balancer. Add a Redis/Postgres checkpointer
+     for LangGraph. Cache slow-changing tool results (credit bands,
+     policy notes). Parallelise independent agents.
+
+Q21. How is PII protected?
+A21. All services are bound to localhost by default. Logs store only
+     classification, action, summary, and case_id - not the full payload.
+     API keys live in .env. Future: TLS, JWT auth, encryption at rest.
+
+Q22. Why use Pydantic across the whole stack?
+A22. One source of truth for the data shape. Schemas are shared between
+     gateway, agents, MCP servers, and the UI. Validation is automatic
+     and errors are clear.
+
+Q23. Why Streamlit?
+A23. Fast prototyping of a polished UI in pure Python. Auto-reload makes
+     iteration quick. Sufficient for the demo; in production we'd swap
+     it for a React/Next.js frontend talking to the same FastAPI gateway.
+
+Q24. How do you handle concurrency?
+A24. Each agent is a separate ASGI process. Uvicorn handles concurrent
+     requests with asyncio. httpx clients are short-lived per request.
+     We don't share mutable state between requests.
+
+Q25. What would you build next?
+A25. Parallel agent execution, an Underwriter agent with a Slack
+     connector for review cases, a Bias/Fairness agent, OpenTelemetry
+     tracing across all hops, Postgres-backed audit, and prompt caching
+     for Claude to cut latency and cost.
+
+
+================================================================================
+THREE DEMO TEST CASES
+================================================================================
+
+----- TEST CASE 1: APPROVED ----------------------------------------------------
+Input (POST /loan/apply):
+  {
+    "applicant_id": "APP1001",
+    "age": 32,
+    "income": 1080000,
+    "employment_type": "Salaried",
+    "credit_score": 760,
+    "loan_amount": 500000,
+    "loan_tenure_months": 60,
+    "existing_liabilities": 5000,
+    "location": "Bengaluru"
+  }
+
+Expected output (key fields):
+  classification    : Approved
+  risk_score        : ~6
+  confidence_level  : ~0.9
+  credit_band       : Excellent
+  DTI               : ~0.18 (Safe)
+  income_stability  : ~0.97
+  case_id           : CASE-XXXXXXXX
+  action            : "Loan offer issued; disbursement workflow triggered."
+
+----- TEST CASE 2: REQUIRES MANUAL REVIEW --------------------------------------
+Input:
+  {
+    "applicant_id": "APP1002",
+    "age": 28,
+    "income": 700000,
+    "employment_type": "Self-Employed",
+    "credit_score": 690,
+    "loan_amount": 600000,
+    "loan_tenure_months": 48,
+    "existing_liabilities": 8000,
+    "location": "Mumbai"
+  }
+
+xExpected output:
+  classification    : Requires Manual Review
+  risk_score        : ~20
+  confidence_level  : ~0.6
+  credit_band       : Fair
+  DTI               : ~0.40 (Moderate)
+  income_stability  : ~0.77 (volatile)
+  key_factors       : 2 late payments, DTI above safe, volatile income
+  action            : "Application routed to manual underwriter queue."
+
+----- TEST CASE 3: REJECTED ----------------------------------------------------
+Input:
+  {
+    "applicant_id": "APP1005",
+    "age": 55,
+    "income": 0,
+    "employment_type": "Unemployed",
+    "credit_score": 520,
+    "loan_amount": 800000,
+    "loan_tenure_months": 60,
+    "existing_liabilities": 0,
+    "location": "Delhi"
+  }
+
+Expected output:
+  classification    : Rejected
+  risk_score        : ~76
+  confidence_level  : ~0.95
+  credit_band       : Very Poor
+  DTI               : 1.0 (Unfeasible, zero income)
+  hard_violations   : Unemployed applicant ineligibility; DTI>0.55 with low
+                      credit score.
+  action            : "Application rejected; adverse action notice queued."
+
+
+================================================================================
+HOW TO RUN LOCALLY  (quick reference)
+================================================================================
+
+  python3 -m venv .venv
+  .venv/bin/pip install -r requirements.txt
+  cp .env.example .env       # add ANTHROPIC_API_KEY
+  ./run_all.sh               # starts 4 MCP + 4 agents + gateway + UI
+  open http://127.0.0.1:8501 # Streamlit chatbot UI
+  open http://127.0.0.1:8000/docs  # FastAPI Swagger
+  ./stop_all.sh              # stop everything
+
+================================================================================
+END OF DOCUMENT
+================================================================================

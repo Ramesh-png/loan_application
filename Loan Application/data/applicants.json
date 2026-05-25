@@ -1,0 +1,248 @@
+{
+  "APP1001": {
+    "applicant_id": "APP1001",
+    "name": "Arjun Mehta",
+    "age": 32,
+    "employment_type": "Salaried",
+    "employer": "Infosys",
+    "employment_tenure_years": 6,
+    "credit_history": {
+      "loans_taken": 2,
+      "loans_closed": 2,
+      "defaults": 0,
+      "late_payments_12mo": 0
+    },
+    "income_history_12mo": [
+      85000,
+      85000,
+      85000,
+      85000,
+      90000,
+      90000,
+      90000,
+      90000,
+      92000,
+      92000,
+      92000,
+      92000
+    ],
+    "address_verified": true,
+    "kyc_complete": true
+  },
+  "APP1002": {
+    "applicant_id": "APP1002",
+    "name": "Priya Iyer",
+    "age": 28,
+    "employment_type": "Self-Employed",
+    "employer": "Iyer Designs (Proprietor)",
+    "employment_tenure_years": 3,
+    "credit_history": {
+      "loans_taken": 1,
+      "loans_closed": 0,
+      "defaults": 0,
+      "late_payments_12mo": 2
+    },
+    "income_history_12mo": [
+      40000,
+      60000,
+      35000,
+      70000,
+      50000,
+      80000,
+      45000,
+      65000,
+      55000,
+      75000,
+      50000,
+      60000
+    ],
+    "address_verified": true,
+    "kyc_complete": true
+  },
+  "APP1003": {
+    "applicant_id": "APP1003",
+    "name": "Rohit Khanna",
+    "age": 45,
+    "employment_type": "Business",
+    "employer": "Khanna Traders",
+    "employment_tenure_years": 15,
+    "credit_history": {
+      "loans_taken": 4,
+      "loans_closed": 3,
+      "defaults": 1,
+      "late_payments_12mo": 3
+    },
+    "income_history_12mo": [
+      150000,
+      145000,
+      160000,
+      155000,
+      140000,
+      150000,
+      165000,
+      170000,
+      160000,
+      155000,
+      150000,
+      160000
+    ],
+    "address_verified": true,
+    "kyc_complete": false
+  },
+  "APP1004": {
+    "applicant_id": "APP1004",
+    "name": "Sneha Kapoor",
+    "age": 24,
+    "employment_type": "Salaried",
+    "employer": "Startup XYZ",
+    "employment_tenure_years": 1,
+    "credit_history": {
+      "loans_taken": 0,
+      "loans_closed": 0,
+      "defaults": 0,
+      "late_payments_12mo": 0
+    },
+    "income_history_12mo": [
+      55000,
+      55000,
+      55000,
+      55000,
+      55000,
+      55000,
+      55000,
+      55000,
+      60000,
+      60000,
+      60000,
+      60000
+    ],
+    "address_verified": false,
+    "kyc_complete": true
+  },
+  "APP1005": {
+    "applicant_id": "APP1005",
+    "name": "Vikram Singh",
+    "age": 55,
+    "employment_type": "Unemployed",
+    "employer": null,
+    "employment_tenure_years": 0,
+    "credit_history": {
+      "loans_taken": 3,
+      "loans_closed": 1,
+      "defaults": 2,
+      "late_payments_12mo": 6
+    },
+    "income_history_12mo": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "address_verified": true,
+    "kyc_complete": true
+  },
+  "APP10000": {
+    "applicant_id": "APP10000",
+    "name": "APP10000",
+    "age": 32,
+    "employment_type": "Salaried",
+    "employer": null,
+    "employment_tenure_years": 0,
+    "credit_history": {
+      "loans_taken": 0,
+      "loans_closed": 0,
+      "defaults": 0,
+      "late_payments_12mo": 0
+    },
+    "income_history_12mo": [
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0,
+      90000.0
+    ],
+    "address_verified": false,
+    "kyc_complete": false,
+    "location": "Bengaluru",
+    "is_new_applicant": true
+  },
+  "APP9999": {
+    "applicant_id": "APP9999",
+    "name": "Test Newcomer",
+    "age": 29,
+    "employment_type": "Salaried",
+    "employer": null,
+    "employment_tenure_years": 0,
+    "credit_history": {
+      "loans_taken": 0,
+      "loans_closed": 0,
+      "defaults": 0,
+      "late_payments_12mo": 0
+    },
+    "income_history_12mo": [
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0
+    ],
+    "address_verified": false,
+    "kyc_complete": false,
+    "location": "Pune",
+    "is_new_applicant": true
+  },
+  "APP9998": {
+    "applicant_id": "APP9998",
+    "name": "Weak Profile",
+    "age": 24,
+    "employment_type": "Salaried",
+    "employer": null,
+    "employment_tenure_years": 0,
+    "credit_history": {
+      "loans_taken": 0,
+      "loans_closed": 0,
+      "defaults": 0,
+      "late_payments_12mo": 0
+    },
+    "income_history_12mo": [
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0,
+      20000.0
+    ],
+    "address_verified": false,
+    "kyc_complete": false,
+    "location": "Patna",
+    "is_new_applicant": true
+  }
+}

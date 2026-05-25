@@ -1,0 +1,19 @@
+INFO:     Started server process [39335]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:9004 (Press CTRL+C to quit)
+/home/ubuntu/Desktop/Load Application/agents/compliance_agent.py:115: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp=datetime.utcnow(),
+INFO:     127.0.0.1:34590 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34002 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37286 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54398 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37870 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53986 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38914 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33682 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39308 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54308 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37640 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37644 - "POST /finalize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34302 - "POST /finalize HTTP/1.1" 200 OK

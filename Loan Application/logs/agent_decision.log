@@ -1,0 +1,17 @@
+INFO:     Started server process [39334]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:9003 (Press CTRL+C to quit)
+INFO:     127.0.0.1:48756 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53586 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42344 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56594 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34570 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34178 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55848 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44632 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46192 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44650 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59916 - "POST /decide HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53034 - "POST /decide HTTP/1.1" 200 OK

@@ -1,0 +1,52 @@
+2026-05-25 12:11:57.644 Uvicorn server started on 0.0.0.0:8501
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://172.31.37.63:8501
+  External URL: http://13.206.190.32:8501
+
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+2026-05-25 15:15:54.670 Script compilation error
+Traceback (most recent call last):
+  File "/home/ubuntu/Desktop/Load Application/.venv/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/Desktop/Load Application/.venv/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/Desktop/Load Application/.venv/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/ast.py", line 52, in parse
+    return compile(source, filename, mode, flags,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py", line 757
+    try:
+IndentationError: unexpected indent
+2026-05-25 15:15:54.675 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
+/home/ubuntu/Desktop/Load Application/ui/streamlit_app.py:780: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "application_timestamp": datetime.utcnow().isoformat(),
